@@ -152,6 +152,7 @@ def top_player_ids(info, statistics, formula, numplayers):
         top_players_ids.append((values[info["playerid"]], value))
     
     top_players_ids.sort(key=lambda pair: pair[1], reverse=True)
+    
     return top_players_ids[:numplayers]
 
 def lookup_player_names(info, top_ids_and_stats):
@@ -170,7 +171,8 @@ def lookup_player_names(info, top_ids_and_stats):
         reader = csv.DictReader(csvfile, delimiter=info["separator"], quotechar=info["quote"])
         
         # Sorry
-        playa_names, playa_info = {}, []
+        playa_names = {} 
+        playa_info = []
 
         # My apologies, but...
         for playa in reader:
@@ -184,6 +186,7 @@ def lookup_player_names(info, top_ids_and_stats):
             f_name = playa_names[playa_id][0]
             l_name = playa_names[playa_id][1]
             playa_info.append("{:0.3f} --- {} {}".format(top_stat, f_name, l_name))
+        
         return playa_info
 
 
@@ -234,12 +237,13 @@ def aggregate_by_player_id(statistics, playerid, fields):
       are dictionaries of aggregated stats.  Only the fields from the fields
       input will be aggregated in the aggregated stats dictionaries.
     """
+    # This function was a serious PITA 
     playas = {}
      
     for line_stat in statistics:
         # New entry to the dictionary
         if line_stat[playerid] not in playas:
-            # Create the new dictionary for playerid
+            # Create a new dictionary for new playerid
             new_dict = {}           
             for field in fields:                
                 new_dict[playerid] = line_stat[playerid]
@@ -267,11 +271,9 @@ def compute_top_stats_career(info, formula, numplayers):
     with open(info["battingfile"], newline='') as csvfile:
         reader = csv.DictReader(csvfile, delimiter=info["separator"], quotechar=info["quote"])        
       
-        stats = aggregate_by_player_id(reader, info["playerid"], info["battingfields"])
-        #print(stats)
+        stats_dict = aggregate_by_player_id(reader, info["playerid"], info["battingfields"])
         #Create list of dictionaries for top_player_ids
-        stat_list = [stats[stat] for stat in stats]
-        #print(stat_list)
+        stat_list = [stats_dict[stat] for stat in stats_dict]
         top_players = top_player_ids(info, stat_list, formula, numplayers)
             
         return lookup_player_names(info, top_players)
@@ -349,5 +351,4 @@ def test_baseball_statistics():
 
 # Make sure the following call to test_baseball_statistics is
 # commented out when submitting to OwlTest/CourseraTest.
-
 # test_baseball_statistics()
